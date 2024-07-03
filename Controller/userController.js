@@ -118,3 +118,14 @@ exports.addAddress = async(req,res)=>{
         res.status(500).send('server error')
     }
 }
+
+exports.userData = async(req,res)=>{
+    try {
+        const user= req.user;
+        const address = await Address.find({ user_id: user });
+        res.send({user,address});
+    } catch (error) {
+        console.error(error.messahe);
+        res.status(500).send('server error');
+    }
+}
