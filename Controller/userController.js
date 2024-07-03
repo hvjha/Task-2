@@ -1,5 +1,9 @@
 const User = require('../mode/User')
 const bcrypt = require('bcrypt')
+const Address = require('../mode/Address')
+const AccessToken = require('../mode/AccessToken');
+const crypto = require('crypto');
+const md5 = require('md5');
 exports.registerUser= async(req,res)=>{
     const {userName,password,confirmPassword,email,firstname,lastname} = req.body;
 
@@ -48,7 +52,16 @@ exports.loginUser = async(req,res)=>{
         if(!isMatch){
             return res.status(400).json({msg:'Invalid UserName or Password'});
         }
-        res.status(200).json({accessToken:user._id})
+        // res.status(200).json({accessToken:user._id})
+        // update code for access Token
+        const accessToken = md5(crypto.randomBytes(16).toString('hex'));
+        const expiry = new Date(Date.now() + 3600000)
+        await AccessToken.create({
+            user_id:user._id,
+            access_token:accessToken,
+            expiry
+        })
+        res.status(200).json({accessToken});
     } catch (error) {
         console.error(error.message);
         res.status(500).send('Server Error');
@@ -84,4 +97,24 @@ exports.listUsers= async(req,res)=>{
     const users = await User.find().skip(skip).limit(limit).select('-password');
 
     res.status(200).json(users);
+}
+
+exports.addAddress = async(req,res)=>{
+    const {address,city,state,pin_code,phone_no}=req.body;
+    const user_id=req.user._id;
+    try {
+        const newAddress = new Address({
+            user_id,
+            address,
+            city,
+            state,
+            pin_code,
+            phone_no
+        })
+        await newAddress.save()
+        res.status(200).json({msg:'Address added successfully'});
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('server error')
+    }
 }
