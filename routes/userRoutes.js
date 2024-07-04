@@ -13,3 +13,4 @@ router.get('/list/:page',validateAccessToken,listUsers);
 router.post('/address',validateAccessToken,addAddress);
 router.get('/getuser/:id',validateAccessToken,userData)
 module.exports = router;
+

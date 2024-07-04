@@ -2,8 +2,10 @@ const User = require('../mode/User')
 const bcrypt = require('bcrypt')
 const Address = require('../mode/Address')
 const AccessToken = require('../mode/AccessToken');
-const crypto = require('crypto');
-const md5 = require('md5');
+// const crypto = require('crypto');
+const jwt = require('jsonwebtoken')
+// const md5 = require('md5');
+const jwtSecret = "excellencetech"
 exports.registerUser= async(req,res)=>{
     const {userName,password,confirmPassword,email,firstname,lastname} = req.body;
 
@@ -54,14 +56,27 @@ exports.loginUser = async(req,res)=>{
         }
         // res.status(200).json({accessToken:user._id})
         // update code for access Token
-        const accessToken = md5(crypto.randomBytes(16).toString('hex'));
-        const expiry = new Date(Date.now() + 3600000)
-        await AccessToken.create({
-            user_id:user._id,
-            access_token:accessToken,
-            expiry
-        })
-        res.status(200).json({accessToken});
+// question 2 part -1
+        // const accessToken = md5(crypto.randomBytes(16).toString('hex'));
+        // const expiry = new Date(Date.now() + 3600000)
+        // await AccessToken.create({
+        //     user_id:user._id,
+        //     access_token:accessToken,
+        //     expiry
+        // })
+        // res.status(200).json({accessToken});
+// question-3 part 1
+        const data = {
+            user:{
+                id:user._id,
+                userName:userName,
+                email:user.email,
+                firstname:user.firstname,
+                lastname:user.lastname
+            }
+        }
+        const authToken = jwt.sign(data,jwtSecret,{expiresIn:3600});
+        res.status(201).json({authToken});
     } catch (error) {
         console.error(error.message);
         res.status(500).send('Server Error');
@@ -101,7 +116,7 @@ exports.listUsers= async(req,res)=>{
 
 exports.addAddress = async(req,res)=>{
     const {address,city,state,pin_code,phone_no}=req.body;
-    const user_id=req.user._id;
+    const user_id = req.user.id;
     try {
         const newAddress = new Address({
             user_id,
@@ -122,7 +137,7 @@ exports.addAddress = async(req,res)=>{
 exports.userData = async(req,res)=>{
     try {
         const user= req.user;
-        const address = await Address.find({ user_id: user });
+        const address = await Address.find({ user_id: user.id });
         res.send({user,address});
     } catch (error) {
         console.error(error.messahe);
