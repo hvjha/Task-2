@@ -144,3 +144,29 @@ exports.userData = async(req,res)=>{
         res.status(500).send('server error');
     }
 }
+
+exports.deleteAddress = async(req,res)=>{
+    const {addressIds} = req.body;
+    const userId = req.user.id;
+    
+    if(!Array.isArray(addressIds) || addressIds.length ===0){
+        console.log("Invalid or missing address IDs");
+        return res.status(400).json({msg:'Invalid or missing address IDs'})
+    }
+    try {
+        console.log('Deleting addresses:', addressIds);
+        const result = await Address.deleteMany({
+            _id:{$in:addressIds},
+            user_id:userId
+        })
+        console.log('Deletion result:', result);
+        if(result.deletedCount === 0){
+            return res.status(400).json({msg:"No address found for deletion"})
+        }
+        res.json({ msg: `Successfully deleted ${result.deletedCount} address(es)` });
+
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({msg:'Server Error'})
+    }
+}
