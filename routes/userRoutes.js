@@ -1,6 +1,6 @@
 const express = require('express');
 
-const {registerUser, loginUser, getUserData, deleteUser, listUsers, addAddress, userData, deleteAddress} = require('../Controller/userController');
+const {registerUser, loginUser, getUserData, deleteUser, listUsers, addAddress, userData, deleteAddress, forgotPassword, verifyResetPassword} = require('../Controller/userController');
 const validateAccessToken = require('../Middleware/authMiddleware');
 
 const router = express.Router();
@@ -13,5 +13,7 @@ router.get('/list/:page',validateAccessToken,listUsers);
 router.post('/address',validateAccessToken,addAddress);
 router.get('/getuser/:id',validateAccessToken,userData)
 router.delete('/address',validateAccessToken,deleteAddress)
+router.post('/forgot-password', forgotPassword);
+router.put('/verify-reset-password',verifyResetPassword);
 module.exports = router;
 
